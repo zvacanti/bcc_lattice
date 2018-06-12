@@ -3,7 +3,7 @@ PROGRAM bcc_lattice
   REAL :: a,b,c, Area
   PRINT *, 'Please enter the side lengths.'
   READ *, a, b, c
-  PRINT *, 'Triangle''s Area: ', Area(abc)
+  PRINT *, 'Triangle''s Area: ', Area(a,b,c)
 END PROGRAM bcc_lattice
 
 Function Area(x,y,z)
