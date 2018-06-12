@@ -1,5 +1,5 @@
 # bcc_lattice
-This will be a FORTRAN 90 program to generate a bcc_lattice crystal for use in IUMD simulations. It may be folded 
+This will be a FORTRAN 90 program to generate a bcc_lattice crystal for use in IUMD simulations. It may be folded into a later version of the IUMD code.
 The development steps will be:
 1. Generate a single bcc lattice
 2. Generate a tiled lattice. 
