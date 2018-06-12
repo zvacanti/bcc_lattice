@@ -7,3 +7,14 @@ The development steps will be:
 4. Generate only the appropriate number of ions from user input.
 5. Generate a tiling angle.
 6. Generate a crystal angle.
+
+
+The output will be a .xyz file type. When read by IUMD, it will assign the particles their velocities via a boltzmann temp. distribution. 
+The .xyz file format is as follows:
+
+1 num_of_particles
+2 COMMENT LINE
+3 <element> <x> <y> <z>
+  ...
+  
+  For iumd, <element>={C,O}, with C being a neutron, O being a proton.
