@@ -1,5 +1,5 @@
 program simple_crystal_lattice
-!Further work: Make it so we can specify the box size.
+!Further work: Make it so we can specify the box shape, so it's not a cube. 
 
 implicit none
 
@@ -16,8 +16,18 @@ real :: x_cen, y_cen, z_cen										!Center ions
 real :: x_copy, y_copy, z_copy									!Needed for loops
 real :: theta, phi, psi												!Rotation angles
 real, dimension (3,1) :: xyz_prime
+real :: x1, x2, y1, y2, z1, z2, distance
+real, allocatable :: positions(:,:)								!Thanks, FORTRAN 90!
+real, allocatable :: posit_rot(:,:)								!Positions BEFORE rotating. 
+real, allocatable :: distances(:,:)
+real, allocatable ::  dist_rot(:,:)								!Distances BEFORE rotating.
 
-N = 54	!N = particles on the vertices of each cube + particles at the center of each cube
+N = 16	!N = particles on the vertices of each cube + particles at the center of each cube
+
+allocate( positions(4, N) )
+allocate( distances(N, N) )
+allocate( posit_rot(4, N) )
+allocate(  dist_rot(N, N) )
 
 !print  *, 'Enter an integer number of ions, N'
 !read  *, N
@@ -40,9 +50,9 @@ s = 1
 !print  *, 'The value of s is', s
 
 length = s*a !is the total side length. This is relevant later. 
+print *, "Side length is: ", length
 
 open(unit = 2, file = "simple_crystal.txt")
-
 !write(2,*) N
 !write(2,*)
 
@@ -59,35 +69,80 @@ open(unit = 2, file = "simple_crystal.txt")
 			y_cen = j*s + s/2 + s/4
 			do k=0,a-1
 				if (counter .EQ. N) EXIT
+				counter = counter +1
 				z = k*s + s/4
 				z_cen = k*s + s/2 + s/4
 				x_copy = x
 				y_copy = y
 				z_copy = z
+				posit_rot(1,counter) = counter
+				posit_rot(2,counter) = x_copy
+				posit_rot(3,counter) = y_copy
+				posit_rot(4,counter) = z_copy
 				call rotation(x_copy,y_copy,z_copy,theta,phi,psi)
-				!call boundary_conditions(x_copy, y_copy, z_copy, length)
+				call boundary_conditions(x_copy, y_copy, z_copy, length)
 				write(2,*) x_copy, y_copy, z_copy
-				counter = counter + 1
+				positions(1,counter) = counter
+				positions(2,counter) = x_copy
+				positions(3,counter) = y_copy
+				positions(4,counter) = z_copy
 				if (counter .EQ. N) EXIT
+!Below, we take care of the central ions.
+				counter = counter + 1
 				x_copy = x_cen
 				y_copy = y_cen
 				z_copy = z_cen
+				posit_rot(1,counter) = counter
+				posit_rot(2,counter) = x_copy
+				posit_rot(3,counter) = y_copy
+				posit_rot(4,counter) = z_copy
 				call rotation(x_copy,y_copy,z_copy,theta,phi,psi)
-				!call boundary_conditions(x_copy, y_copy, z_copy, length)
+				call boundary_conditions(x_copy, y_copy, z_copy, length)
 				write(2,*) x_copy, y_copy, z_copy
-				counter = counter + 1
+				positions(1,counter) = counter
+				positions(2,counter) = x_copy
+				positions(3,counter) = y_copy
+				positions(4,counter) = z_copy
 				if (counter .EQ. N) EXIT
 			end do
-		
 		end do	
-	
 	end do
+	close( 2, status='keep')
+print *, "File written."
 
-print  *, counter
-print *, x, y, z
-call rotation(x,y,z,theta, phi,psi)
-!call boundary_conditions(x,y,z,length)
-print *, x_copy, y_copy, z_copy
+i=1
+j=1
+distance = 0
+counter = 0
+do i=1, N
+	do j=1, N
+		counter = counter + 1
+		x1		 			= positions(2, i)
+		x2 				= positions(2, j)
+		y1 				= positions(3, i)
+		y2					= positions(3, j)
+		z1 				= positions(4, i)
+		z2	 				= positions(4, j)
+		call euclid(distance,length, x1, y1, z1, x2, y2, z2)
+		distances(i,j) = distance
+
+		x1		 			= posit_rot(2, i)
+		x2 				= posit_rot(2, j)
+		y1 				= posit_rot(3, i)
+		y2					= posit_rot(3, j)
+		z1 				= posit_rot(4, i)
+		z2	 				= posit_rot(4, j)
+		call euclid(distance,length, x1, y1, z1, x2, y2, z2)
+		dist_rot(i,j)  = distance
+
+!		print *, counter, distances(i,j), dist_rot(i,j)
+		if (abs(distances(i,j) - dist_rot(i,j)) > 0.1) then			!Tests distances.
+			print *, "--------------   ERROR   --------------"
+		endif 
+	enddo
+enddo
+
+deallocate (positions, distances)
 end  program simple_crystal_lattice
 
 !---------------------------------------------------------------------------------------
@@ -137,48 +192,55 @@ implicit none
 real, intent( inout) :: x, y, z, s
 
 if (x < 0) then
-	x = abs(x)
+	x = s+mod(x,s)
 else if (x > s) then
-	x = x - s
+	x = mod(x,s)
 else
 	x = x
 endif
 
 if (y < 0) then
-	y = abs(y)
+	y = s+mod(y,s)
 else if (y > s) then
-	y = y - s
+	y = mod(y,s)
 else
 	y = y
 endif
 
 if (z < 0) then
-	z = abs(z)
+	z = s+mod(z,s)
 else if (z > s) then
-	z = z - s
+	z = mod(z,s)
 else
 	z = z
 endif
 
 end subroutine boundary_conditions
 
+!------------------------------------------------------------------------------------
+!This is a testing subroutine.
+!These are pulled from wikipedia. 
+subroutine euclid(distance,length, x1, y1, z1, x2, y2, z2)
+implicit none
+real, intent( inout)	:: distance
+real, intent( in ) 	:: length, x1, y1, z1, x2, y2, z2
 
+real :: dx, dy, dz
 
+!x1 = x2 - floor(x1/length) * length								!Alternate position equation.
+dx = x2 - x1
+dx = dx - nint(dx / length) * length
 
+!y1 = y2 - floor(y1/length) * length
+dy = y2 - y1
+dy = dy - nint(dy / length) * length
 
+!z1 = z2 - floor(z1/length) * length
+dz = z2 - z1
+dz = dz - nint(dz / length) * length
 
+distance = (dx**2 + dy**2 + dz**2)**(1.0/2.0)
 
-
-
-
-
-
-
-
-
-
-
-
-
+end subroutine euclid
 
 
