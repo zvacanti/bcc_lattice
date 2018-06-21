@@ -18,3 +18,6 @@ The .xyz file format is as follows:
   ...
   
   For iumd, <element>={C,O}, with C being a neutron, O being a proton.
+
+bcc_v1.f90 is the first stable version that does everything it's supposed to.
+bcc_v12.f90 will be the first stable version that outputs to x8b filetype.
