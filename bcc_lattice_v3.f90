@@ -29,7 +29,9 @@ parameter (pi = 3.1415926535897932D0)
 double precision rad
 parameter (rad = 0.174533)
 
-N = 16																	!Test param
+N = 51200
+rho = 0.05	!units are in fermi
+s = (2.0/rho)**(1.0/3.0)																	!Test param
 
 allocate(   pos_pre_rot(3,N) )
 allocate(  pos_post_rot(3,N) )
@@ -41,7 +43,8 @@ allocate(  ang_post_rot(N,N) )
 a = ceiling((N/2.0)**(1.0/3.0))									!N=2*a^3
 counter = 0
 
-print *, "Ions per side (a) : ", a
+print *, "Ions per side (a): ", a
+print *, "The distance between each ion(s) is: ", s
 print *, "x angle in radians:"
 !read *, angx
 print *, "y angle in radians:"
@@ -53,7 +56,7 @@ angx = 0
 angy = 0
 angz = rad*18
 
-s        = 1.0
+!s        = 1.0
 
 length   = s*a															!length = interion spacing * num ions
 distance = 0
