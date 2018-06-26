@@ -35,10 +35,6 @@ s = (2.0/rho)**(1.0/3.0)																	!Test param
 
 allocate(   pos_pre_rot(3,N) )
 allocate(  pos_post_rot(3,N) )
-allocate(  dist_pre_rot(N,N) )
-allocate( dist_post_rot(N,N) )
-allocate(   ang_pre_rot(N,N) )
-allocate(  ang_post_rot(N,N) )
 
 a = ceiling((N/2.0)**(1.0/3.0))									!N=2*a^3
 counter = 0
@@ -54,7 +50,7 @@ print *, "z angle in radians:"
 
 angx = 0
 angy = 0
-angz = rad*18
+angz = rad*4.5
 
 !s        = 1.0
 
@@ -84,15 +80,15 @@ do i=0, a-1
 		pos_pre_rot(1,counter) = x_copy
 		pos_pre_rot(2,counter) = y_copy
 		pos_pre_rot(3,counter) = z_copy
-		print *, "pre  (m): ", counter, x_copy, y_copy, z_copy
+!		print *, "pre  (m): ", counter, x_copy, y_copy, z_copy
 		call rotation (x_copy, y_copy, z_copy, angx, angy, angz)
 		call boundary_conditions(x_copy, y_copy, z_copy, length)
 		write(2,*) x_copy, y_copy, z_copy
 		pos_post_rot(1,counter) = x_copy
 		pos_post_rot(2,counter) = y_copy
 		pos_post_rot(3,counter) = z_copy
-		print *, "post (m): ", counter, x_copy, y_copy, z_copy
-		print *, ""
+!		print *, "post (m): ", counter, x_copy, y_copy, z_copy
+!		print *, ""
 		
 		if (counter .eq. N) exit
 		counter = counter +1
@@ -102,15 +98,15 @@ do i=0, a-1
 		pos_pre_rot(1,counter) = x_copy
 		pos_pre_rot(2,counter) = y_copy
 		pos_pre_rot(3,counter) = z_copy
-		print *, "pre  (c): ", counter, x_copy, y_copy, z_copy
+!		print *, "pre  (c): ", counter, x_copy, y_copy, z_copy
 		call rotation (x_copy, y_copy, z_copy, angx, angy, angz)
 		call boundary_conditions(x_copy, y_copy, z_copy, length)
 		write(2,*) x_copy, y_copy, z_copy
 		pos_post_rot(1,counter) = x_copy
 		pos_post_rot(2,counter) = y_copy
 		pos_post_rot(3,counter) = z_copy
-		print *, "post (c): ", counter, x_copy, y_copy, z_copy
-		print *, ""
+!		print *, "post (c): ", counter, x_copy, y_copy, z_copy
+!		print *, ""
 		if (counter .eq. N) exit
 		enddo
 	enddo
@@ -119,37 +115,44 @@ enddo
 
 call x8b_format(N, rho, pos_post_rot)
 
-print *, "          i", "           j", "   distance"
-print *, "----------------------------------------------------"
-do i=1, N
-	do j=i+1, N
-		x1 				= pos_pre_rot(1,i)
-		x2 				= pos_pre_rot(1,j)
-		y1 				= pos_pre_rot(2,i)
-		y2 				= pos_pre_rot(2,j)
-		z1 				= pos_pre_rot(3,i)
-		z2 				= pos_pre_rot(3,j)
-		call euclid(distance, angle, length, x1, y1, z1, x2, y2, z2)
-		dist_pre_rot(i,j)	= distance
-		 ang_pre_rot(i,j) = angle
+!allocate(  dist_pre_rot(N,N) )
+!allocate( dist_post_rot(N,N) )
+!allocate(   ang_pre_rot(N,N) )
+!allocate(  ang_post_rot(N,N) )
 
-		x1 				= pos_post_rot(1,i)
-		x2 				= pos_post_rot(1,j)
-		y1 				= pos_post_rot(2,i)
-		y2 				= pos_post_rot(2,j)
-		z1 				= pos_post_rot(3,i)
-		z2 				= pos_post_rot(3,j)
-		call euclid(distance, angle, length, x1, y1, z1, x2, y2, z2)
-		dist_post_rot(i,j)	= distance
-		 ang_post_rot(i,j) 	= angle
+!print *, "          i", "           j", "   distance"
+!print *, "----------------------------------------------------"
+!do i=1, N
+!	do j=i+1, N
+!		x1 				= pos_pre_rot(1,i)
+!		x2 				= pos_pre_rot(1,j)
+!		y1 				= pos_pre_rot(2,i)
+!		y2 				= pos_pre_rot(2,j)
+!		z1 				= pos_pre_rot(3,i)
+!		z2 				= pos_pre_rot(3,j)
+!		call euclid(distance, angle, length, x1, y1, z1, x2, y2, z2)
+!		dist_pre_rot(i,j)	= distance
+!		 ang_pre_rot(i,j) = angle
+!
+!		x1 				= pos_post_rot(1,i)
+!		x2 				= pos_post_rot(1,j)
+!		y1 				= pos_post_rot(2,i)
+!		y2 				= pos_post_rot(2,j)
+!		z1 				= pos_post_rot(3,i)
+!		z2 				= pos_post_rot(3,j)
+!		call euclid(distance, angle, length, x1, y1, z1, x2, y2, z2)
+!		dist_post_rot(i,j)	= distance
+!		 ang_post_rot(i,j) 	= angle
 !		print *, i, j, dist_pre_rot(i,j)-dist_post_rot(i,j)
-		if (abs(dist_pre_rot(i,j) - dist_post_rot(i,j))>0.1*length .or.&
-			abs(ang_pre_rot(i,j) - ang_post_rot(i,j))>0.00174533) then
-			print *, "ERROR", i, j, abs(dist_pre_rot(i,j) - dist_post_rot(i,j)), &
-				abs(ang_pre_rot(i,j)-ang_post_rot(i,j))
-		end if
-	enddo
-enddo
+!		if (abs(dist_pre_rot(i,j) - dist_post_rot(i,j))>0.1*length .or.&
+!			abs(ang_pre_rot(i,j) - ang_post_rot(i,j))>0.00174533) then
+!			print *, "ERROR", i, j, abs(dist_pre_rot(i,j) - dist_post_rot(i,j)), &
+!				abs(ang_pre_rot(i,j)-ang_post_rot(i,j))
+!		end if
+!	enddo
+!enddo
+
+!deallocate (dist_pre_rot, dist_post_rot(N,N), ang_pre_rot, ang_post_rot )
 
 end program bcc_lattice
 
@@ -328,7 +331,7 @@ write(14) xdate,xdaytime,xtimezone
 write(14) "ion"
 write(14) time, rho, aspect, ev, ek, px, pp, N
 
-write(14) (positions(1,i), positions(2,i), positions(3,i), i=0, N-1)
+write(14) (positions(1,i), positions(2,i), positions(3,i), i=1, N)
 
  close(14)
 
