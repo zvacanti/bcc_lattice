@@ -121,6 +121,7 @@ enddo
 
 call xyz_format(N, pos_post_rot)
 call x8b_format(N, rho, pos_post_rot)
+call xfb_format(N, rho, pos_post_rot)
 
 !allocate(  dist_pre_rot(N,N) )
 !allocate( dist_post_rot(N,N) )
@@ -302,7 +303,7 @@ character(8)	xdate			!date configuration was written to
 					!file, from Fortran date_and_time
 character(10)	xdaytime		!time of day, from date_and_time
 character(5)	xtimezone		!time zone, from date_and_time
-character(20)	ion			!simulation type
+character(20)	sim_type		!simulation type
 real(dbl)	time			!simulation time stamp(REQUIRED)
 real(dbl)	aspect(3)		!aspect ratio of box edge lengths(REQUIRED)
 real(dbl)	ev			!average potential energy per particle
@@ -323,6 +324,7 @@ time = 0
 aspect(1) = 1
 aspect(2) = 1
 aspect(3) = 1
+sim_type = 'ion'
 ev = 0
 ek = 0
 px = 0
@@ -330,7 +332,6 @@ pp = 0
 xcode_name = ''
 xcode_version = ''
 xftype = 'x8b'
-
 
 inquire(14,opened=xopnd)
 open(14,FILE="md.00000000000.x8b",STATUS='UNKNOWN',FORM='UNFORMATTED')
@@ -340,7 +341,7 @@ write(14) xftype
 !print *, xcode_name, xcode_version
 write(14) xcode_name, xcode_version
 write(14) xdate,xdaytime,xtimezone
-write(14) "ion"
+write(14) sim_type
 write(14) time, rho, aspect, ev, ek, px, pp, N
 
 write(14) (positions(1,i), positions(2,i), positions(3,i), i=1, N)
@@ -377,6 +378,84 @@ open(14,FILE="md.00000000000.xyz",STATUS='UNKNOWN',FORM='FORMATTED')
  close(14)	
 
 end subroutine xyz_format
+
+!------------------------------------------------------------------
+
+subroutine xfb_format(N, rho, positions)
+
+implicit none
+
+integer, parameter :: dbl=kind(1.0d0)
+integer, intent (in) :: N
+real, intent (in) :: rho
+real(dbl), intent (in) :: positions(3,N)
+integer :: i
+character(10)	xcode_name		!name of program which created file
+character(8)	xcode_version		!program version
+character(8)	xdate			!date configuration was written to
+					!file, from Fortran date_and_time
+character(10)	xdaytime		!time of day, from date_and_time
+character(5)	xtimezone		!time zone, from date_and_time
+character(20)	sim_type		!simulation type
+real(dbl)	time			!simulation time stamp(REQUIRED)
+real(dbl)	aspect(3)		!aspect ratio of box edge lengths(REQUIRED)
+real(dbl)	ev			!average potential energy per particle
+real(dbl)	ek			!average kinetic energy per particle
+real(dbl)	px			!pressure
+real(dbl)	pp(3,3)			!pressure tensor
+
+!!!Particle data
+
+character(6)	xftype			!file type
+logical		xappend			!.true. = append to existing file
+					!.false. = write new file
+logical		xclose			!.true. = close file after writing
+					!.false. = leave file open
+logical		xopnd			!.true. unit 14 is already opened
+
+time = 0
+aspect(1) = 1
+aspect(2) = 1
+aspect(3) = 1
+sim_type = 'ion'
+ev = 0
+ek = 0
+px = 0
+pp = 0
+xcode_name = ''
+xcode_version = ''
+xftype = 'xfb'
+
+inquire(14,opened=xopnd)
+open(14,FILE="md.00000000000.xfb",STATUS='UNKNOWN',FORM='FORMATTED')
+
+!call date_and_time(xdate,xdaytime,xtimezone)
+write(14,10010) trim(xftype)
+write(14,10010) trim(xcode_name), trim(xcode_version)
+!write(14,10010) trim(xdate),trim(xdaytime),trim(xtimezone)
+write(14,10010) trim(sim_type)
+write(14,10040) time
+write(14,10044) rho
+write(14,10050) aspect(1),aspect(2),aspect(3)
+write(14,10054) ev,ek,px
+write(14,10058) pp
+write(14,10060) N
+
+10010 format('# ',a,2x,a,2x,a)
+10040 format('# ',f14.2)
+10044 format('# ',es19.12)
+10050 format('# ',3(1x,f16.12))
+10054 format('# ',3(1x,es19.12))
+10058 format('#',/,2('# ',3(1x,es19.12),/),'# ',3(1x,es19.12))
+10060 format('  ',i10)
+
+write(14,10114) (positions(1,i),positions(2,i),positions(3,i), i=1,N)
+10114 format(es24.16,es24.16,es24.16)
+
+ close(14)
+
+end subroutine xfb_format
+
 !------------------------------------------------------------------
 
 !This makes lines. For testing. Inset it into line 63 to impliment.
